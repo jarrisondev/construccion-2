@@ -1,4 +1,4 @@
-package com.construccion2;
+package app;
 
 import static org.junit.Assert.assertTrue;
 
