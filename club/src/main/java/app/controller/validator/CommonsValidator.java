@@ -11,7 +11,7 @@ public abstract class CommonsValidator {
     isValidString(element, value);
     try {
       return Integer.parseInt(value);
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       throw new Exception(element + " debe ser un valor valido");
     }
   }
@@ -20,7 +20,7 @@ public abstract class CommonsValidator {
     isValidString(element, value);
     try {
       return Long.parseLong(value);
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       throw new Exception(element + " debe ser un valor valido");
     }
   }
@@ -29,7 +29,7 @@ public abstract class CommonsValidator {
     isValidString(element, value);
     try {
       return Double.parseDouble(value);
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       throw new Exception(element + " debe ser un valor valido");
     }
   }

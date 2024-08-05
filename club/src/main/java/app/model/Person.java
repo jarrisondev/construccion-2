@@ -1,7 +1,6 @@
 package app.model;
 
 public class Person {
-  // id long; cedula long; name:string; cellPhone: long
 
   private long id;
   private long cedula;
