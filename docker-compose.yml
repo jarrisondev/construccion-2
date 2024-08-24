@@ -3,16 +3,17 @@ services:
     image: mysql:latest
     restart: always
     environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
       MYSQL_DATABASE: 'club_db'
-      MYSQL_USER: 'club_db'
-      MYSQL_PASSWORD: 'root'
-      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_USER: 'club_db_user'
+      MYSQL_PASSWORD: ''
+      MYSQL_ROOT_PASSWORD: ''
     ports:
       - '3306:3306'
     expose:
       - '3306'
     volumes:
-      - my-db:/var/lib/mysql
+      - club_db:/var/lib/mysql
 # Names our volume
 volumes:
-  my-db:
+  club_db:
