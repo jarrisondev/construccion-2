@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import app.controller.Utils;
 
 public class MYSQLConnection {
-	private static final String URL = "jdbc:mysql://localhost:3306/veterinaria20242";
+
+	private static final String URL = "jdbc:mysql://localhost:3306/club_db";
 	private static final String USER = "root";
-	private static final String PASSWORD = "";
+	private static final String PASSWORD = "root";
 
 	public static Connection getConnection() {
 		Connection connection = null;
@@ -18,7 +19,8 @@ public class MYSQLConnection {
 			connection = DriverManager.getConnection(URL, USER, PASSWORD);
 			Utils.log("Conexión exitosa");
 		} catch (ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+			Utils.log("Error al conectar a la base de datos");
+			Utils.log(e.getMessage());
 		}
 		return connection;
 	}
