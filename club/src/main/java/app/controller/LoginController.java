@@ -18,7 +18,7 @@ public class LoginController implements ControllerInterface {
 		this.service = new Service();
 		ControllerInterface partnerController = new PartnerController();
 		ControllerInterface guestController = new PartnerController();
-		ControllerInterface adminController = new PartnerController();
+		ControllerInterface adminController = new AdminController();
 		this.roles = new HashMap<>();
 
 		roles.put("admin", adminController);
@@ -27,7 +27,7 @@ public class LoginController implements ControllerInterface {
 	}
 
 	@Override
-	public void session()  {
+	public void session() {
 		boolean session = true;
 		while (session) {
 			session = menu();
@@ -73,13 +73,14 @@ public class LoginController implements ControllerInterface {
 
 		UserDto userDto = new UserDto();
 		userDto.setPassword(password);
-		userDto.setUserName(userName);
+		userDto.setUsername(userName);
 
 		this.service.login(userDto);
 
-		if (roles.get(userDto.getRole()) != null) {
-			roles.get(userDto.getRole()).session();
+		if (roles.get(userDto.getRole()) == null) {
+			throw new Exception("Rol invalido");
 		}
+		roles.get(userDto.getRole()).session();
 
 	}
 

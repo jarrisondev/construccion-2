@@ -1,10 +1,9 @@
 package app.dto;
 
-import app.model.Person;
-
 public class UserDto {
+
 	private long id;
-	private Person personId;
+	private PersonDto personId;
 	private String username;
 	private String password;
 	private String role;
@@ -20,12 +19,20 @@ public class UserDto {
 		this.id = id;
 	}
 
-	public Person getPersonid() {
+	public PersonDto getPersonId() {
 		return personId;
 	}
 
-	public void setPersonid(Person personid) {
-		this.personId = personid;
+	public void setPersonId(PersonDto personId) {
+		this.personId = personId;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 	public String getPassword() {
@@ -34,14 +41,6 @@ public class UserDto {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getUserName() {
-		return username;
-	}
-
-	public void setUserName(String username) {
-		this.username = username;
 	}
 
 	public String getRole() {
