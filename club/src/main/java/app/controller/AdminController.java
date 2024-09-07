@@ -2,9 +2,11 @@ package app.controller;
 
 import app.controller.validator.PersonValidator;
 import app.controller.validator.UserValidator;
+import app.dto.PartnerDto;
 import app.dto.PersonDto;
 import app.dto.UserDto;
 import app.helpers.Roles;
+import app.helpers.Suscription;
 import app.service.Service;
 import app.service.interfaces.AdminService;
 
@@ -97,7 +99,12 @@ public class AdminController implements ControllerInterface {
 		userDto.setPassword(password);
 		userDto.setRole(Roles.getPARTNER());
 
-		this.service.createPartner(userDto);
+		PartnerDto partnerDto = new PartnerDto();
+		partnerDto.setUserId(userDto);
+		partnerDto.setAmount(0);
+		partnerDto.setType(Suscription.getRegular());
+
+		this.service.createPartner(partnerDto);
 		Utils.log("se ha creado el usuario exitosamente");
 	}
 

@@ -1,5 +1,6 @@
 package app.controller;
 
+import java.sql.Date;
 import java.util.Scanner;
 
 public abstract class Utils {
@@ -11,5 +12,9 @@ public abstract class Utils {
 
   public static void log(String message) {
     System.out.println(message);
+  }
+
+  public static Date getDate() {
+    return new Date(System.currentTimeMillis());
   }
 }

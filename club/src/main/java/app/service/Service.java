@@ -4,29 +4,42 @@ import java.sql.SQLException;
 import java.util.List;
 
 import app.controller.Utils;
+import app.dao.PartnerDaoImplementation;
 import app.dao.PersonDaoImplementation;
 import app.dao.UserDaoImplementation;
+import app.dao.interfaces.PartnerDao;
 import app.dao.interfaces.PersonDao;
 import app.dao.interfaces.UserDao;
+import app.dto.PartnerDto;
 import app.dto.PersonDto;
 import app.dto.UserDto;
 import app.helpers.Roles;
 import app.service.interfaces.AdminService;
+import app.service.interfaces.PartnerService;
 
-public class Service implements AdminService {
+public class Service implements AdminService, PartnerService {
   private UserDao userDao;
   private PersonDao personDao;
+  private PartnerDao partnerDao;
 
   public static UserDto user;
 
   public Service() {
     this.userDao = new UserDaoImplementation();
     this.personDao = new PersonDaoImplementation();
+    this.partnerDao = new PartnerDaoImplementation();
   }
 
   @Override
-  public void createPartner(UserDto userDto) throws Exception {
+  public void createGuest(UserDto userDto) throws Exception {
     this.createUser(userDto);
+  }
+
+  @Override
+  public void createPartner(PartnerDto partnerDto) throws Exception {
+    this.createUser(partnerDto.getUserId());
+    this.partnerDao.createPartner(partnerDto);
+
   }
 
   public void login(UserDto userDto) throws Exception {
@@ -48,8 +61,9 @@ public class Service implements AdminService {
     userDto.setPersonId(personDto);
     if (this.userDao.existsByUserName(userDto)) {
       this.personDao.deletePerson(userDto.getPersonId());
-      throw new Exception("ya existe un usuario con ese user name");
+      throw new Exception("ya existe un usuario con ese username");
     }
+
     try {
       this.userDao.createUser(userDto);
     } catch (SQLException e) {
