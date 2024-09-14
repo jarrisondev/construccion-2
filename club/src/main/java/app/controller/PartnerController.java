@@ -15,7 +15,7 @@ public class PartnerController implements ControllerInterface {
 	private PersonValidator personValidator;
 	private UserValidator userValidator;
 	private PartnerService service;
-	private static final String MENU = "Ingrese la opcion la accion que desea hacer \n 1. Para crear invitados. \n 2. Para listar invitados \n 3. para cerrar sesion";
+	private static final String MENU = "Ingrese la opcion la accion que desea hacer \n 1. Para crear invitados. \n 2. Para listar invitados \n 3. Para cambiar estado de invitado  \n 4. para cerrar sesion";
 
 	public PartnerController() {
 		this.personValidator = new PersonValidator();
@@ -54,6 +54,10 @@ public class PartnerController implements ControllerInterface {
 				return true;
 			}
 			case "3": {
+				this.changeStatusGuest();
+				return true;
+			}
+			case "4": {
 				Utils.log("se ha cerrado sesion");
 				return false;
 			}
@@ -67,7 +71,7 @@ public class PartnerController implements ControllerInterface {
 
 	private void listGuests() throws Exception {
 		this.service.listGuests().forEach(user -> {
-			Utils.log(user.getPersonId().getName());
+			Utils.log(user.getPersonId().getName() + " " + user.getPersonId().getCedula());
 		});
 	}
 
@@ -109,10 +113,33 @@ public class PartnerController implements ControllerInterface {
 			throw new Exception("no se ha encontrado el socio");
 		}
 		guestDto.setPartnerId(resultPartnerDto);
-		guestDto.setStatus(true);
+		guestDto.setStatus(false);
 
 		this.service.createGuest(guestDto);
 		Utils.log("se ha creado el usuario exitosamente");
 	}
 
+	private void changeStatusGuest() throws Exception {
+		Utils.log("ingrese la cedula del invitado");
+		long document = personValidator.validCedula(Utils.getReader().nextLine());
+
+		GuestDto guestDto = new GuestDto();
+
+		PersonDto personDto = new PersonDto();
+		personDto.setCedula(document);
+
+		UserDto userDto = new UserDto();
+		userDto.setPersonId(personDto);
+
+		guestDto.setUserId(userDto);
+
+		GuestDto guestResultDto = this.service.getGuest(guestDto);
+
+		if (guestResultDto == null) {
+			throw new Exception("no se ha encontrado el invitado");
+		}
+
+		this.service.changeStatusGuest(guestResultDto);
+		Utils.log("se ha cambiado el estado del invitado a " + !guestResultDto.getStatus());
+	}
 }

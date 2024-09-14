@@ -13,4 +13,8 @@ public interface PartnerService {
 
 	public List<UserDto> listGuests() throws Exception;
 
+	public void changeStatusGuest(GuestDto guestDto) throws Exception;
+
+	public GuestDto getGuest(GuestDto guestDto) throws Exception;
+
 }

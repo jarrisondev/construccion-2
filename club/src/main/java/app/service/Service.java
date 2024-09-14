@@ -91,6 +91,16 @@ public class Service implements AdminService, PartnerService {
   }
 
   @Override
+  public GuestDto getGuest(GuestDto guestDto) throws Exception {
+    return this.guestDao.getGuest(guestDto);
+  }
+
+  @Override
+  public void changeStatusGuest(GuestDto guestDto) throws Exception {
+    this.guestDao.changeStatus(guestDto);
+  }
+
+  @Override
   public List<UserDto> listPartners() throws Exception {
     try {
       List<UserDto> users = userDao.findUsersByRole(Roles.getPARTNER());
