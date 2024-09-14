@@ -23,7 +23,7 @@ public class AdminController implements ControllerInterface {
 	}
 
 	@Override
-	public void session() {
+	public void session(UserDto currentUserDto) {
 		boolean session = true;
 		while (session) {
 			session = menu();

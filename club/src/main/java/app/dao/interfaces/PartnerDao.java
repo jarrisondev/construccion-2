@@ -8,4 +8,6 @@ public interface PartnerDao {
 
 	public void deletePartner(PartnerDto partnerDto) throws Exception;
 
+	public PartnerDto getPartner(PartnerDto partnerDto) throws Exception;
+
 }

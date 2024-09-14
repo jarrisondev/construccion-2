@@ -1,6 +1,7 @@
 package app.dao;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import app.config.MYSQLConnection;
 import app.dao.interfaces.PartnerDao;
@@ -32,6 +33,30 @@ public class PartnerDaoImplementation implements PartnerDao {
 		// preparedStatement.setLong(1, partner.getCedula());
 		// preparedStatement.execute();
 		// preparedStatement.close();
+	}
+
+	@Override
+	public PartnerDto getPartner(PartnerDto partnerDto) throws Exception {
+		String query = "SELECT * FROM PARTNER WHERE PERSONID = ?";
+		PreparedStatement preparedStatement = MYSQLConnection.getConnection().prepareStatement(query);
+		preparedStatement.setLong(1, partnerDto.getUserId().getPersonId().getCedula());
+		ResultSet resulSet = preparedStatement.executeQuery();
+		if (resulSet.next()) {
+			PartnerDto partnerResult = new PartnerDto();
+			partnerResult.setAmount(resulSet.getDouble("AMOUNT"));
+			partnerResult.setType(resulSet.getString("TYPE"));
+			partnerResult.setUserId(partnerDto.getUserId());
+
+			resulSet.close();
+			preparedStatement.close();
+
+			return partnerResult;
+		}
+
+		resulSet.close();
+		preparedStatement.close();
+
+		return null;
 	}
 
 }

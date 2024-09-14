@@ -4,12 +4,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 import app.controller.Utils;
+import app.dao.GuestDaoImplementation;
 import app.dao.PartnerDaoImplementation;
 import app.dao.PersonDaoImplementation;
 import app.dao.UserDaoImplementation;
+import app.dao.interfaces.GuestDao;
 import app.dao.interfaces.PartnerDao;
 import app.dao.interfaces.PersonDao;
 import app.dao.interfaces.UserDao;
+import app.dto.GuestDto;
 import app.dto.PartnerDto;
 import app.dto.PersonDto;
 import app.dto.UserDto;
@@ -21,6 +24,7 @@ public class Service implements AdminService, PartnerService {
   private UserDao userDao;
   private PersonDao personDao;
   private PartnerDao partnerDao;
+  private GuestDao guestDao;
 
   public static UserDto user;
 
@@ -28,11 +32,13 @@ public class Service implements AdminService, PartnerService {
     this.userDao = new UserDaoImplementation();
     this.personDao = new PersonDaoImplementation();
     this.partnerDao = new PartnerDaoImplementation();
+    this.guestDao = new GuestDaoImplementation();
   }
 
   @Override
-  public void createGuest(UserDto userDto) throws Exception {
-    this.createUser(userDto);
+  public void createGuest(GuestDto guestDto) throws Exception {
+    this.createUser(guestDto.getUserId());
+    this.guestDao.createGuest(guestDto);
   }
 
   @Override
@@ -40,6 +46,11 @@ public class Service implements AdminService, PartnerService {
     this.createUser(partnerDto.getUserId());
     this.partnerDao.createPartner(partnerDto);
 
+  }
+
+  @Override
+  public PartnerDto getPartner(PartnerDto partnerDto) throws Exception {
+    return this.partnerDao.getPartner(partnerDto);
   }
 
   public void login(UserDto userDto) throws Exception {
@@ -51,6 +62,7 @@ public class Service implements AdminService, PartnerService {
       throw new Exception("usuario o contraseña incorrecto");
     }
     userDto.setRole(validateDto.getRole());
+    userDto.setPersonId(validateDto.getPersonId());
     user = validateDto;
   }
 
@@ -82,6 +94,23 @@ public class Service implements AdminService, PartnerService {
   public List<UserDto> listPartners() throws Exception {
     try {
       List<UserDto> users = userDao.findUsersByRole(Roles.getPARTNER());
+      for (UserDto userDto : users) {
+        PersonDto personDto = personDao.findByCedula(userDto.getPersonId());
+        userDto.setPersonId(personDto);
+      }
+
+      return users;
+
+    } catch (Exception e) {
+      Utils.log(e.getMessage());
+      throw new RuntimeException("error al listar los socios");
+    }
+  }
+
+  @Override
+  public List<UserDto> listGuests() throws Exception {
+    try {
+      List<UserDto> users = userDao.findUsersByRole(Roles.getGUEST());
       for (UserDto userDto : users) {
         PersonDto personDto = personDao.findByCedula(userDto.getPersonId());
         userDto.setPersonId(personDto);

@@ -27,7 +27,7 @@ public class LoginController implements ControllerInterface {
 	}
 
 	@Override
-	public void session() {
+	public void session(UserDto userDto) {
 		boolean session = true;
 		while (session) {
 			session = menu();
@@ -80,7 +80,7 @@ public class LoginController implements ControllerInterface {
 		if (roles.get(userDto.getRole()) == null) {
 			throw new Exception("Rol invalido");
 		}
-		roles.get(userDto.getRole()).session();
+		roles.get(userDto.getRole()).session(userDto);
 
 	}
 

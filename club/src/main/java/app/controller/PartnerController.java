@@ -2,18 +2,20 @@ package app.controller;
 
 import app.controller.validator.PersonValidator;
 import app.controller.validator.UserValidator;
+import app.dto.GuestDto;
+import app.dto.PartnerDto;
 import app.dto.PersonDto;
 import app.dto.UserDto;
 import app.helpers.Roles;
 import app.service.Service;
-import app.service.interfaces.AdminService;
+import app.service.interfaces.PartnerService;
 
 public class PartnerController implements ControllerInterface {
 
 	private PersonValidator personValidator;
 	private UserValidator userValidator;
-	private AdminService service;
-	private static final String MENU = "Ingrese la opcion la accion que desea hacer \n 1. Para crear invitados. \n 2. para cerrar sesion";
+	private PartnerService service;
+	private static final String MENU = "Ingrese la opcion la accion que desea hacer \n 1. Para crear invitados. \n 2. Para listar invitados \n 3. para cerrar sesion";
 
 	public PartnerController() {
 		this.personValidator = new PersonValidator();
@@ -22,32 +24,36 @@ public class PartnerController implements ControllerInterface {
 	}
 
 	@Override
-	public void session() {
+	public void session(UserDto currentUserDto) {
 		boolean session = true;
 		while (session) {
-			session = partnerSession();
+			session = partnerSession(currentUserDto);
 		}
 
 	}
 
-	private boolean partnerSession() {
+	private boolean partnerSession(UserDto currentUserDto) {
 		try {
 			Utils.log(MENU);
 			String option = Utils.getReader().nextLine();
-			return menu(option);
+			return menu(option, currentUserDto);
 		} catch (Exception e) {
 			Utils.log(e.getMessage());
 			return true;
 		}
 	}
 
-	private boolean menu(String option) throws Exception {
+	private boolean menu(String option, UserDto currentUserDto) throws Exception {
 		switch (option) {
 			case "1": {
-				this.createGuest();
+				this.createGuest(currentUserDto);
 				return true;
 			}
 			case "2": {
+				this.listGuests();
+				return true;
+			}
+			case "3": {
 				Utils.log("se ha cerrado sesion");
 				return false;
 			}
@@ -59,7 +65,14 @@ public class PartnerController implements ControllerInterface {
 
 	}
 
-	private void createGuest() throws Exception {
+	private void listGuests() throws Exception {
+		this.service.listGuests().forEach(user -> {
+			Utils.log(user.getPersonId().getName());
+		});
+	}
+
+	private void createGuest(UserDto currentUserDto) throws Exception {
+
 		Utils.log("ingrese el nombre del invitado");
 		String name = Utils.getReader().nextLine();
 		personValidator.validName(name);
@@ -85,7 +98,20 @@ public class PartnerController implements ControllerInterface {
 		userDto.setPassword(password);
 		userDto.setRole(Roles.getGUEST());
 
-		// this.service.create(userDto);
+		GuestDto guestDto = new GuestDto();
+		guestDto.setUserId(userDto);
+
+		PartnerDto partnerDto = new PartnerDto();
+		partnerDto.setUserId(currentUserDto);
+
+		PartnerDto resultPartnerDto = this.service.getPartner(partnerDto);
+		if (resultPartnerDto == null) {
+			throw new Exception("no se ha encontrado el socio");
+		}
+		guestDto.setPartnerId(resultPartnerDto);
+		guestDto.setStatus(true);
+
+		this.service.createGuest(guestDto);
 		Utils.log("se ha creado el usuario exitosamente");
 	}
 

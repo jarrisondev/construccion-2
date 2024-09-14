@@ -29,8 +29,10 @@ public class UserDaoImplementation implements UserDao {
 			Person person = new Person();
 			person.setCedula(resulSet.getLong("PERSONID"));
 			user.setPersonId(person);
+
 			resulSet.close();
 			preparedStatement.close();
+
 			return Helper.parse(user);
 		}
 		resulSet.close();

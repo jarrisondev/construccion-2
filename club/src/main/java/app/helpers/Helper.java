@@ -1,8 +1,10 @@
 package app.helpers;
 
+import app.dto.GuestDto;
 import app.dto.PartnerDto;
 import app.dto.PersonDto;
 import app.dto.UserDto;
+import app.model.Guest;
 import app.model.Partner;
 import app.model.Person;
 import app.model.User;
@@ -57,6 +59,40 @@ public abstract class Helper {
 		partner.setCreationDate(partnerDto.getCreationDate());
 
 		return partner;
+	}
+
+	public static PartnerDto parse(Partner partner) {
+		PartnerDto partnerDto = new PartnerDto();
+
+		partnerDto.setId(partner.getId());
+		partnerDto.setUserId(parse(partner.getUserId()));
+		partnerDto.setAmount(partner.getAmount());
+		partnerDto.setType(partner.getType());
+		partnerDto.setCreationDate(partner.getCreationDate());
+
+		return partnerDto;
+	}
+
+	public static Guest parse(GuestDto guestDto) {
+		Guest guest = new Guest();
+
+		guest.setId(guestDto.getId());
+		guest.setUserId(parse(guestDto.getUserId()));
+		guest.setStatus(guestDto.getStatus());
+		guest.setPartnerId(parse(guestDto.getPartnerId()));
+
+		return guest;
+	}
+
+	public static GuestDto parse(Guest guest) {
+		GuestDto guestDto = new GuestDto();
+
+		guestDto.setId(guest.getId());
+		guestDto.setUserId(parse(guest.getUserId()));
+		guestDto.setStatus(guest.getStatus());
+		guestDto.setPartnerId(parse(guest.getPartnerId()));
+
+		return guestDto;
 	}
 
 }
