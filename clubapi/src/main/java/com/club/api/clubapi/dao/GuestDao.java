@@ -31,6 +31,14 @@ public class GuestDao {
 	@Autowired
 	public GuestRepository guestRepository;
 
+	public Optional<GuestDto> findById(Long id) throws Exception {
+		Guest guest = guestRepository.findById(id).orElse(null);
+		if (guest == null) {
+			return Optional.empty();
+		}
+		return Optional.of(Helper.parse(guest));
+	}
+
 	public void createGuest(GuestDto guestDto) throws Exception {
 		Guest guest = Helper.parse(guestDto);
 		guestRepository.save(guest);

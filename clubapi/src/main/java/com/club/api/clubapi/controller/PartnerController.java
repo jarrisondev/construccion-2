@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.club.api.clubapi.controller.requestDto.GuestRequestDto;
+import com.club.api.clubapi.controller.requestDto.GuestStatusRequestDto;
 import com.club.api.clubapi.dto.GuestDto;
 import com.club.api.clubapi.dto.PartnerDto;
 import com.club.api.clubapi.dto.PersonDto;
@@ -61,18 +63,33 @@ public class PartnerController {
 
 	}
 
-	@GetMapping("/guests/changeStatus")
-	ResponseEntity<?> changeStatusGuest(
-			@RequestBody @Validated long id) throws Exception {
-		UserDto userDto = new UserDto();
-		userDto.setId(id);
-
+	@GetMapping("/guests/partner/{id}")
+	ResponseEntity<?> listGuestsByPartner(@PathVariable("id") long id) throws Exception {
 		try {
-			this.service.updateGuestStatus(userDto);
-			return ResponseEntity.ok("se ha cambiado el estado del invitado exitosamente");
+			return ResponseEntity.ok(this.service.getGuestsByCurrentPartner(id));
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
-
 	}
+
+	@PostMapping("/guests/activate")
+	ResponseEntity<?> activateGuest(@RequestBody @Validated GuestStatusRequestDto body) throws Exception {
+		try {
+			this.service.activateGuestByPartner(body.getPartnerId(), body.getGuestId());
+			return ResponseEntity.ok("se ha activado el usuario exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
+	@PostMapping("/guests/deactivate")
+	ResponseEntity<?> deactivateGuest(@RequestBody @Validated GuestStatusRequestDto body) throws Exception {
+		try {
+			this.service.deactivateGuestByPartner(body.getPartnerId(), body.getGuestId());
+			return ResponseEntity.ok("se ha desactivado el usuario exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
 }

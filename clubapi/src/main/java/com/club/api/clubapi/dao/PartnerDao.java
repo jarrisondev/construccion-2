@@ -30,6 +30,14 @@ public class PartnerDao {
 	@Autowired
 	private InvoiceDao invoiceDao;
 
+	public Optional<PartnerDto> findById(Long id) throws Exception {
+		Partner partner = partnerRepository.findById(id).orElse(null);
+		if (partner == null) {
+			return Optional.empty();
+		}
+		return Optional.of(Helper.parse(partner));
+	}
+
 	public void createPartner(PartnerDto partnerDto) throws Exception {
 		Partner partner = Helper.parse(partnerDto);
 		partnerRepository.save(partner);

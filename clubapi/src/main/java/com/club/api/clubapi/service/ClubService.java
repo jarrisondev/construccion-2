@@ -41,8 +41,6 @@ public class ClubService {
   GuestDao guestDao;
 
   private UserDto user;
-  private PartnerDto partner;
-  private GuestDto guest;
 
   public void createPerson(PersonDto personDto) throws Exception {
     try {
@@ -144,19 +142,6 @@ public class ClubService {
     }
   }
 
-  public void createPartnerFromGuest(PartnerDto partnerDto) throws Exception {
-    partnerDto.setUserId(user);
-    user.setRole(Role.PARTNER);
-    guest.setStatus(GuestStatus.INACTIVE);
-    try {
-      this.partnerDao.createPartner(partnerDto);
-      this.updateUser(user);
-      this.updateGuest(guest);
-    } catch (SQLException e) {
-      throw new Exception("Error creando Socio: " + e.getMessage());
-    }
-  }
-
   public List<InvoiceDto> getAllInvoices() throws Exception {
     try {
       return this.invoiceDao.findAll();
@@ -184,11 +169,10 @@ public class ClubService {
   public PartnerDto getCurrentPartner() throws Exception {
     try {
       Optional<PartnerDto> partnerDto = this.partnerDao.findByUserId(user);
-      if (partnerDto.isPresent()) {
-        return partnerDto.get();
-      } else {
+      if (!partnerDto.isPresent()) {
         throw new Exception("Socio no encontrado.");
       }
+      return partnerDto.get();
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos del Socio: " + e);
     }
@@ -197,11 +181,11 @@ public class ClubService {
   public GuestDto getCurrentGuest() throws Exception {
     try {
       Optional<GuestDto> guestDto = this.guestDao.findByUserId(user);
-      if (guestDto.isPresent()) {
-        return guestDto.get();
-      } else {
+      if (!guestDto.isPresent()) {
         throw new Exception("Invitado no encontrado.");
       }
+      return guestDto.get();
+
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos del Invitado: " + e);
     }
@@ -217,7 +201,12 @@ public class ClubService {
 
   public List<InvoiceDto> getPendingInvoicesByCurrentPartnerId() throws Exception {
     try {
-      List<InvoiceDto> invoices = this.invoiceDao.findByPartnerId(partner);
+      Optional<PartnerDto> partner = partnerDao.findByUserId(user);
+      if (!partner.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+
+      List<InvoiceDto> invoices = this.invoiceDao.findByPartnerId(partner.get());
       List<InvoiceDto> pendingInvoices = invoices.stream()
           .filter(invoice -> invoice.getStatus() == InvoiceStatus.PENDING)
           .collect(Collectors.toList());
@@ -261,30 +250,64 @@ public class ClubService {
     return newAmount;
   }
 
-  public void updateGuestStatus(UserDto userDto) throws Exception {
+  public void activateGuestByPartner(long partnerId, long guestId) throws Exception {
     try {
-      Optional<GuestDto> guestDto = this.guestDao.findByUserId(userDto);
+      Optional<PartnerDto> partner = partnerDao.findById(partnerId);
+      if (!partner.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+      List<GuestDto> guests = this.guestDao.findByPartnerId(partner.get());
+      int currentActive = 0;
 
-      if (guestDto.isPresent()) {
-        GuestDto guestDtoToUpdate = guestDto.get();
-        if (guestDtoToUpdate.getStatus() == GuestStatus.ACTIVE) {
-          guestDtoToUpdate.setStatus(GuestStatus.INACTIVE);
-        } else {
-          guestDtoToUpdate.setStatus(GuestStatus.ACTIVE);
+      for (GuestDto guest : guests) {
+        if (guest.getStatus() == GuestStatus.ACTIVE) {
+          currentActive++;
         }
-        this.guestDao.updateGuest(guestDtoToUpdate);
-      } else {
-        throw new Exception("Invitado no encontrado.");
       }
 
+      if (partner.get().getType() != SuscriptionType.VIP && currentActive >= 3) {
+        throw new Exception("Excede límite de invitados activos permitido \n");
+      }
+
+      Optional<GuestDto> guest = this.guestDao.findById(guestId);
+      if (!guest.isPresent()) {
+        throw new Exception("Invitado no encontrado.");
+      }
+      guest.get().setStatus(GuestStatus.ACTIVE);
+      this.guestDao.updateGuest(guest.get());
     } catch (SQLException e) {
-      throw new Exception("Error actualizando estado del Invitado: " + e);
+      throw new Exception("Error activando invitado: " + e);
     }
   }
 
-  public List<GuestDto> getGuestsByCurrentPartner() throws Exception {
+  public void deactivateGuestByPartner(long partnerId, long guestId) throws Exception {
     try {
-      return this.guestDao.findByPartnerId(partner);
+      Optional<PartnerDto> partner = partnerDao.findById(partnerId);
+      if (!partner.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+
+      Optional<GuestDto> guest = this.guestDao.findById(guestId);
+      if (!guest.isPresent()) {
+        throw new Exception("Invitado no encontrado.");
+      }
+      guest.get().setStatus(GuestStatus.INACTIVE);
+      this.guestDao.updateGuest(guest.get());
+    } catch (SQLException e) {
+      throw new Exception("Error desactivando el invitado: " + e);
+    }
+
+  }
+
+  public List<GuestDto> getGuestsByCurrentPartner(long id) throws Exception {
+
+    try {
+      Optional<PartnerDto> partner = partnerDao.findById(id);
+
+      if (!partner.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+      return this.guestDao.findByPartnerId(partner.get());
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos de invitados del socio: " + e);
     }
@@ -306,9 +329,13 @@ public class ClubService {
     }
   }
 
-  public List<InvoiceDto> getAllInvoicesByPartnerId() throws Exception {
+  public List<InvoiceDto> getAllInvoicesByPartnerId(long id) throws Exception {
     try {
-      return this.invoiceDao.findByPartnerId(partner);
+      Optional<PartnerDto> partner = partnerDao.findById(id);
+      if (!partner.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+      return this.invoiceDao.findByPartnerId(partner.get());
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos de facturas: " + e);
     }
