@@ -1,15 +1,16 @@
 package com.club.api.clubapi.controller;
 
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.club.api.clubapi.controller.requestDto.PersonRequestDto;
+import com.club.api.clubapi.controller.requestDto.GuestRequestDto;
 import com.club.api.clubapi.dto.GuestDto;
+import com.club.api.clubapi.dto.PartnerDto;
 import com.club.api.clubapi.dto.PersonDto;
 import com.club.api.clubapi.dto.UserDto;
 import com.club.api.clubapi.model.GuestStatus;
@@ -18,19 +19,20 @@ import com.club.api.clubapi.service.ClubService;
 
 @RestController
 public class PartnerController {
-	final private ClubService service;
-
-	public PartnerController() {
-		this.service = new ClubService();
-	}
+	@Autowired
+	ClubService service;
 
 	@GetMapping("/guests")
-	List<UserDto> listGuests() throws Exception {
-		return this.service.listByRole(Role.GUEST);
+	ResponseEntity<?> listGuests() throws Exception {
+		try {
+			return ResponseEntity.ok(this.service.listByRole(Role.GUEST));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 	}
 
 	@PostMapping("/guests")
-	String createGuest(@RequestBody @Validated PersonRequestDto personRequest) throws Exception {
+	ResponseEntity<?> createGuest(@RequestBody @Validated GuestRequestDto personRequest) throws Exception {
 		PersonDto personDto = new PersonDto();
 		personDto.setDocument(personRequest.getDocument());
 		personDto.setName(personRequest.getName());
@@ -42,22 +44,35 @@ public class PartnerController {
 		userDto.setPassword(personRequest.getPassword());
 		userDto.setRole(Role.GUEST);
 
+		PartnerDto partnerDto = new PartnerDto();
+		partnerDto.setId(personRequest.getPartnerId());
+
 		GuestDto guestDto = new GuestDto();
 		guestDto.setUserId(userDto);
+		guestDto.setPartnerId(partnerDto);
 		guestDto.setStatus(GuestStatus.INACTIVE);
 
-		this.service.createGuest(guestDto);
+		try {
+			this.service.createGuest(guestDto);
+			return ResponseEntity.ok("se ha creado el usuario exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
 
-		return "se ha creado el usuario exitosamente";
 	}
 
 	@GetMapping("/guests/changeStatus")
-	String changeStatusGuest(
+	ResponseEntity<?> changeStatusGuest(
 			@RequestBody @Validated long id) throws Exception {
 		UserDto userDto = new UserDto();
 		userDto.setId(id);
 
-		this.service.updateGuestStatus(userDto);
-		return "se ha cambiado el estado del invitado exitosamente";
+		try {
+			this.service.updateGuestStatus(userDto);
+			return ResponseEntity.ok("se ha cambiado el estado del invitado exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+
 	}
 }

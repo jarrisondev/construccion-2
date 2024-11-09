@@ -1,8 +1,7 @@
 package com.club.api.clubapi.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,17 +28,17 @@ public class AdminController {
 	ClubService service;
 
 	@GetMapping("/partners")
-	List<UserDto> listPartners() throws Exception {
+	ResponseEntity<?> listPartners() throws Exception {
 		try {
-			return this.service.listByRole(Role.PARTNER);
+			return ResponseEntity.ok(this.service.listByRole(Role.PARTNER));
 
 		} catch (Exception e) {
-			throw new Exception(e.getMessage());
+			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
 
 	@PostMapping("/partners")
-	String createPartner(@RequestBody @Validated PersonRequestDto personRequest) throws Exception {
+	ResponseEntity<?> createPartner(@RequestBody @Validated PersonRequestDto personRequest) throws Exception {
 
 		PersonDto personDto = new PersonDto();
 		personDto.setName(personRequest.getName());
@@ -60,20 +59,21 @@ public class AdminController {
 
 		try {
 			this.service.createPartner(partnerDto);
-			return "se ha creado el usuario exitosamente";
+			return ResponseEntity.ok("se ha creado el usuario exitosamente");
 		} catch (Exception e) {
-			return e.getMessage();
+
+			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 
 	}
 
 	@DeleteMapping("/persons/{id}")
-	String deletePerson(@PathVariable("id") long id) throws Exception {
+	ResponseEntity<?> deletePerson(@PathVariable("id") long id) throws Exception {
 		try {
 			this.service.deletePerson(id);
-			return "se ha eliminado el usuario exitosamente";
+			return ResponseEntity.ok("se ha eliminado el usuario exitosamente");
 		} catch (Exception e) {
-			return e.getMessage();
+			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 	}
 }
