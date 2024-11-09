@@ -37,6 +37,15 @@ public class AdminController {
 		}
 	}
 
+	@GetMapping("/guests")
+	ResponseEntity<?> listGuests() throws Exception {
+		try {
+			return ResponseEntity.ok(this.service.listByRole(Role.GUEST));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
 	@PostMapping("/partners")
 	ResponseEntity<?> createPartner(@RequestBody @Validated PersonRequestDto personRequest) throws Exception {
 
