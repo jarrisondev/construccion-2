@@ -1,14 +1,10 @@
 package com.club.api.clubapi.dao;
 
 import com.club.api.clubapi.dto.GuestDto;
-import com.club.api.clubapi.dto.InvoiceDetailDto;
-import com.club.api.clubapi.dto.InvoiceDto;
 import com.club.api.clubapi.dto.PartnerDto;
 import com.club.api.clubapi.dto.PersonDto;
 import com.club.api.clubapi.dto.UserDto;
 import com.club.api.clubapi.model.Guest;
-import com.club.api.clubapi.model.Invoice;
-import com.club.api.clubapi.model.InvoiceDetail;
 import com.club.api.clubapi.model.Partner;
 import com.club.api.clubapi.model.Person;
 import com.club.api.clubapi.model.User;
@@ -63,60 +59,6 @@ public abstract class Helper {
         user.setRole(userDto.getRole());
         user.setUserName(userDto.getUsername());
         return user;
-    }
-
-    public static InvoiceDto parse(Invoice invoice) {
-        if (invoice == null) {
-            return null;
-        }
-        InvoiceDto invoiceDto = new InvoiceDto();
-        invoiceDto.setId(invoice.getId());
-        invoiceDto.setCreationDate(invoice.getCreationDate());
-        invoiceDto.setAmount(invoice.getAmount());
-        invoiceDto.setStatus(invoice.getStatus());
-        invoiceDto.setPersonId(parse(invoice.getPersonId()));
-        invoiceDto.setPartnerId(parse(invoice.getPartnerId()));
-        return invoiceDto;
-    }
-
-    public static Invoice parse(InvoiceDto invoiceDto) {
-        if (invoiceDto == null) {
-            return null;
-        }
-        Invoice invoice = new Invoice();
-        invoice.setId(invoiceDto.getId());
-        invoice.setCreationDate(invoiceDto.getCreationDate());
-        invoice.setAmount(invoiceDto.getAmount());
-        invoice.setStatus(invoiceDto.getStatus());
-        invoice.setPersonId(parse(invoiceDto.getPersonId()));
-        invoice.setPartnerId(parse(invoiceDto.getPartnerId()));
-        return invoice;
-    }
-
-    public static InvoiceDetailDto parse(InvoiceDetail invoiceDetail) {
-        if (invoiceDetail == null) {
-            return null;
-        }
-        InvoiceDetailDto invoiceDetailDto = new InvoiceDetailDto();
-        invoiceDetailDto.setId(invoiceDetail.getId());
-        invoiceDetailDto.setItem(invoiceDetail.getItem());
-        invoiceDetailDto.setDescription(invoiceDetail.getDescription());
-        invoiceDetailDto.setAmount(invoiceDetail.getAmount());
-        invoiceDetailDto.setInvoiceId(parse(invoiceDetail.getInvoiceId()));
-        return invoiceDetailDto;
-    }
-
-    public static InvoiceDetail parse(InvoiceDetailDto invoiceDetailDto) {
-        if (invoiceDetailDto == null) {
-            return null;
-        }
-        InvoiceDetail invoiceDetail = new InvoiceDetail();
-        invoiceDetail.setId(invoiceDetailDto.getId());
-        invoiceDetail.setItem(invoiceDetailDto.getItem());
-        invoiceDetail.setDescription(invoiceDetailDto.getDescription());
-        invoiceDetail.setAmount(invoiceDetailDto.getAmount());
-        invoiceDetail.setInvoiceId(parse(invoiceDetailDto.getInvoiceId()));
-        return invoiceDetail;
     }
 
     public static PartnerDto parse(Partner partner) {

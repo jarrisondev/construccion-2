@@ -27,8 +27,6 @@ import lombok.Setter;
 public class PartnerDao {
 	@Autowired
 	public PartnerRepository partnerRepository;
-	@Autowired
-	private InvoiceDao invoiceDao;
 
 	public Optional<PartnerDto> findById(Long id) throws Exception {
 		Partner partner = partnerRepository.findById(id).orElse(null);
@@ -58,8 +56,6 @@ public class PartnerDao {
 
 		for (Partner partner : partners) {
 			PartnerDto partnerDto = Helper.parse(partner);
-			double totalInvoicesAmountPaid = invoiceDao.getTotalInvoicesAmountPaid(partnerDto);
-			partnerDto.setTotalInvoicesAmountPaid(totalInvoicesAmountPaid);
 			partnersDto.add(partnerDto);
 		}
 

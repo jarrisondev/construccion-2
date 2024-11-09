@@ -5,24 +5,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.club.api.clubapi.dao.GuestDao;
-import com.club.api.clubapi.dao.InvoiceDao;
 import com.club.api.clubapi.dao.PartnerDao;
 import com.club.api.clubapi.dao.PersonDao;
 import com.club.api.clubapi.dao.UserDao;
 import com.club.api.clubapi.dto.GuestDto;
-import com.club.api.clubapi.dto.InvoiceDetailDto;
-import com.club.api.clubapi.dto.InvoiceDto;
 import com.club.api.clubapi.dto.PartnerDto;
 import com.club.api.clubapi.dto.PersonDto;
 import com.club.api.clubapi.dto.UserDto;
 import com.club.api.clubapi.model.GuestStatus;
-import com.club.api.clubapi.model.InvoiceStatus;
 import com.club.api.clubapi.model.Role;
 import com.club.api.clubapi.model.SuscriptionType;
 import com.club.api.clubapi.service.serviceDto.UserServiceDto;
@@ -33,8 +28,6 @@ public class ClubService {
   UserDao userDao;
   @Autowired
   PersonDao personDao;
-  @Autowired
-  InvoiceDao invoiceDao;
   @Autowired
   PartnerDao partnerDao;
   @Autowired
@@ -142,22 +135,6 @@ public class ClubService {
     }
   }
 
-  public List<InvoiceDto> getAllInvoices() throws Exception {
-    try {
-      return this.invoiceDao.findAll();
-    } catch (SQLException e) {
-      throw new Exception("Error obteniendo datos de facturas: " + e);
-    }
-  }
-
-  public List<InvoiceDto> getInvoicesByRole(Role role) throws Exception {
-    try {
-      return this.invoiceDao.findByRole(role);
-    } catch (SQLException e) {
-      throw new Exception("Error obteniendo datos de facturas por rol: " + e);
-    }
-  }
-
   public List<PartnerDto> getPartnersByType(SuscriptionType type) throws Exception {
     try {
       return this.partnerDao.findByType(type);
@@ -197,57 +174,6 @@ public class ClubService {
     } catch (SQLException e) {
       throw new Exception("Error eliminando datos del socio: " + e);
     }
-  }
-
-  public List<InvoiceDto> getPendingInvoicesByCurrentPartnerId() throws Exception {
-    try {
-      Optional<PartnerDto> partner = partnerDao.findByUserId(user);
-      if (!partner.isPresent()) {
-        throw new Exception("Socio no encontrado.");
-      }
-
-      List<InvoiceDto> invoices = this.invoiceDao.findByPartnerId(partner.get());
-      List<InvoiceDto> pendingInvoices = invoices.stream()
-          .filter(invoice -> invoice.getStatus() == InvoiceStatus.PENDING)
-          .collect(Collectors.toList());
-      return pendingInvoices;
-    } catch (SQLException e) {
-      throw new Exception("Error obteniendo datos de facturas pendientes: " + e);
-    }
-  }
-
-  public void createInvoice(InvoiceDto invoiceDto, InvoiceDetailDto details[]) throws Exception {
-    try {
-      PersonDto personDto = new PersonDto();
-      personDto.setId(user.getPersonId().getId());
-      invoiceDto.setPersonId(personDto);
-
-      InvoiceDto newInvoice = this.invoiceDao.createInvoice(invoiceDto);
-      for (InvoiceDetailDto detail : details) {
-        detail.setInvoiceId(newInvoice);
-        this.invoiceDao.createInvoiceDetail(detail);
-      }
-
-      System.out.println("Factura creada con éxito. \n");
-    } catch (SQLException e) {
-      throw new Exception("Error creando facturas: " + e);
-    }
-  }
-
-  public double payPendingInvoices(double currentAmount) throws Exception {
-    List<InvoiceDto> pendingInvoices = this.getPendingInvoicesByCurrentPartnerId();
-    double newAmount = currentAmount;
-    for (InvoiceDto invoice : pendingInvoices) {
-      double newAmountToSet = newAmount - invoice.getAmount();
-      if (newAmountToSet >= 0) {
-        invoice.setStatus(InvoiceStatus.PAID);
-        this.invoiceDao.updateInvoice(invoice);
-        newAmount = newAmountToSet;
-        System.out.println("Factura " + invoice.getId() + " pagada: -" + invoice.getAmount() + "\n");
-      }
-    }
-    System.out.println("Nuevo saldo: " + newAmount + "\n");
-    return newAmount;
   }
 
   public void activateGuestByPartner(long partnerId, long guestId) throws Exception {
@@ -329,15 +255,4 @@ public class ClubService {
     }
   }
 
-  public List<InvoiceDto> getAllInvoicesByPartnerId(long id) throws Exception {
-    try {
-      Optional<PartnerDto> partner = partnerDao.findById(id);
-      if (!partner.isPresent()) {
-        throw new Exception("Socio no encontrado.");
-      }
-      return this.invoiceDao.findByPartnerId(partner.get());
-    } catch (SQLException e) {
-      throw new Exception("Error obteniendo datos de facturas: " + e);
-    }
-  }
 }
