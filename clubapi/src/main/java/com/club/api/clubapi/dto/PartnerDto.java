@@ -13,6 +13,7 @@ public class PartnerDto {
   private double amount;
   private SuscriptionType type;
   private Timestamp creationDate;
+  private double totalInvoicesAmountPaid;
 
   @Override
   public String toString() {

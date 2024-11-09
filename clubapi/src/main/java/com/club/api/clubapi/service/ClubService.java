@@ -2,7 +2,9 @@
 package com.club.api.clubapi.service;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import com.club.api.clubapi.model.GuestStatus;
 import com.club.api.clubapi.model.InvoiceStatus;
 import com.club.api.clubapi.model.Role;
 import com.club.api.clubapi.model.SuscriptionType;
+import com.club.api.clubapi.service.serviceDto.UserServiceDto;
 
 @Service
 public class ClubService {
@@ -40,30 +43,6 @@ public class ClubService {
   private UserDto user;
   private PartnerDto partner;
   private GuestDto guest;
-
-  public void login(UserDto userDto) throws Exception {
-    UserDto validateDto = userDao.findByUserName(userDto);
-    if (validateDto == null) {
-      throw new Exception("No existe usuario ingresado.");
-    }
-    if (!userDto.getPassword().equals(validateDto.getPassword())) {
-      throw new Exception("Usuario o contraseña incorrecto");
-    }
-    userDto.setRole(validateDto.getRole());
-    user = validateDto;
-    if (user.getRole() == Role.PARTNER) {
-      partner = this.getCurrentPartner();
-    } else if (user.getRole() == Role.GUEST) {
-      guest = this.getCurrentGuest();
-    }
-  }
-
-  public void logout() {
-    user = null;
-    partner = null;
-    guest = null;
-    System.out.println("Se ha cerrado sesion \n");
-  }
 
   public void createPerson(PersonDto personDto) throws Exception {
     try {
@@ -92,16 +71,37 @@ public class ClubService {
     }
   }
 
-  public List<UserDto> listByRole(Role role) throws Exception {
+  public List<UserServiceDto> listByRole(Role role) throws Exception {
     try {
+      List<UserServiceDto> usersFinal = new ArrayList<>();
+
       List<UserDto> users = userDao.findByRole(role);
 
       for (UserDto userDto : users) {
+
+        UserServiceDto userServiceDto = new UserServiceDto();
+
         PersonDto personDto = personDao.findByDocument(userDto.getPersonId());
-        userDto.setPersonId(personDto);
+        userServiceDto.setPersonId(personDto);
+
+        Optional<PartnerDto> partnerDto = partnerDao.findByUserId(userDto);
+        Optional<GuestDto> guestDto = guestDao.findByUserId(userDto);
+
+        if (partnerDto.isPresent()) {
+          userServiceDto.setPartnerId(partnerDto.get());
+        }
+        if (guestDto.isPresent()) {
+          userServiceDto.setGuestId(guestDto.get());
+        }
+
+        userServiceDto.setId(userDto.getId());
+        userServiceDto.setUsername(userDto.getUsername());
+        userServiceDto.setRole(userDto.getRole());
+
+        usersFinal.add(userServiceDto);
       }
 
-      return users;
+      return usersFinal;
 
     } catch (Exception e) {
       throw new RuntimeException("error al listar los usuarios por rol: " + e);
@@ -132,7 +132,6 @@ public class ClubService {
   }
 
   public void createGuest(GuestDto guestDto) throws Exception {
-    guestDto.setPartnerId(partner);
     this.createUser(guestDto.getUserId());
     UserDto userDto = userDao.findByUserName(guestDto.getUserId());
     guestDto.setUserId(userDto);
@@ -184,7 +183,12 @@ public class ClubService {
 
   public PartnerDto getCurrentPartner() throws Exception {
     try {
-      return this.partnerDao.findByUserId(user);
+      Optional<PartnerDto> partnerDto = this.partnerDao.findByUserId(user);
+      if (partnerDto.isPresent()) {
+        return partnerDto.get();
+      } else {
+        throw new Exception("Socio no encontrado.");
+      }
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos del Socio: " + e);
     }
@@ -192,7 +196,12 @@ public class ClubService {
 
   public GuestDto getCurrentGuest() throws Exception {
     try {
-      return this.guestDao.findByUserId(user);
+      Optional<GuestDto> guestDto = this.guestDao.findByUserId(user);
+      if (guestDto.isPresent()) {
+        return guestDto.get();
+      } else {
+        throw new Exception("Invitado no encontrado.");
+      }
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos del Invitado: " + e);
     }
@@ -254,16 +263,20 @@ public class ClubService {
 
   public void updateGuestStatus(UserDto userDto) throws Exception {
     try {
-      GuestDto guestDto = this.guestDao.findByUserId(userDto);
-      if (guestDto == null) {
+      Optional<GuestDto> guestDto = this.guestDao.findByUserId(userDto);
+
+      if (guestDto.isPresent()) {
+        GuestDto guestDtoToUpdate = guestDto.get();
+        if (guestDtoToUpdate.getStatus() == GuestStatus.ACTIVE) {
+          guestDtoToUpdate.setStatus(GuestStatus.INACTIVE);
+        } else {
+          guestDtoToUpdate.setStatus(GuestStatus.ACTIVE);
+        }
+        this.guestDao.updateGuest(guestDtoToUpdate);
+      } else {
         throw new Exception("Invitado no encontrado.");
       }
-      if (guestDto.getStatus() == GuestStatus.ACTIVE) {
-        guestDto.setStatus(GuestStatus.INACTIVE);
-      } else {
-        guestDto.setStatus(GuestStatus.ACTIVE);
-      }
-      this.guestDao.updateGuest(guestDto);
+
     } catch (SQLException e) {
       throw new Exception("Error actualizando estado del Invitado: " + e);
     }

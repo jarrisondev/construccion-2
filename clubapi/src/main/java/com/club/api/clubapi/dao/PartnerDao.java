@@ -3,6 +3,7 @@ package com.club.api.clubapi.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,13 +35,13 @@ public class PartnerDao {
 		partnerRepository.save(partner);
 	}
 
-	public PartnerDto findByUserId(UserDto userDto) throws Exception {
+	public Optional<PartnerDto> findByUserId(UserDto userDto) throws Exception {
 		User user = Helper.parse(userDto);
 		Partner partner = partnerRepository.findByUserId(user);
 		if (partner == null) {
-			return null;
+			return Optional.empty();
 		}
-		return Helper.parse(partner);
+		return Optional.of(Helper.parse(partner));
 	}
 
 	public List<PartnerDto> findByType(SuscriptionType type) throws Exception {

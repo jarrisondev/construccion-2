@@ -61,12 +61,12 @@ public class GuestDao {
 		guestRepository.save(guest);
 	}
 
-	public GuestDto findByUserId(UserDto userDto) throws Exception {
+	public Optional<GuestDto> findByUserId(UserDto userDto) throws Exception {
 		User user = Helper.parse(userDto);
 		Guest guest = guestRepository.findByUserId(user);
 		if (guest == null) {
-			return null;
+			return Optional.empty();
 		}
-		return Helper.parse(guest);
+		return Optional.of(Helper.parse(guest));
 	}
 }
