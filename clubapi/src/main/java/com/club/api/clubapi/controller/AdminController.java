@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +30,12 @@ public class AdminController {
 
 	@GetMapping("/partners")
 	List<UserDto> listPartners() throws Exception {
-		return this.service.listByRole(Role.PARTNER);
+		try {
+			return this.service.listByRole(Role.PARTNER);
+
+		} catch (Exception e) {
+			throw new Exception(e.getMessage());
+		}
 	}
 
 	@PostMapping("/partners")
@@ -61,13 +67,10 @@ public class AdminController {
 
 	}
 
-	@DeleteMapping("/partners")
-	String deletePartner(@RequestBody @Validated long id) throws Exception {
-		UserDto userDto = new UserDto();
-		userDto.setId(id);
-
+	@DeleteMapping("/persons/{id}")
+	String deletePerson(@PathVariable("id") long id) throws Exception {
 		try {
-			this.service.deletePartner(userDto);
+			this.service.deletePerson(id);
 			return "se ha eliminado el usuario exitosamente";
 		} catch (Exception e) {
 			return e.getMessage();

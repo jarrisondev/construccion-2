@@ -122,6 +122,15 @@ public class ClubService {
 
   }
 
+  public void deletePerson(long id) throws Exception {
+    try {
+      this.personDao.deletePerson(id);
+
+    } catch (SQLException e) {
+      throw new Exception("Error eliminando Socio: " + e);
+    }
+  }
+
   public void createGuest(GuestDto guestDto) throws Exception {
     guestDto.setPartnerId(partner);
     this.createUser(guestDto.getUserId());
