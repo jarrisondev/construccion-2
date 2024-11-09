@@ -3,6 +3,7 @@ package com.club.api.clubapi.service;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -155,6 +156,51 @@ public class ClubService {
     }
   }
 
+  public void requestVIPUpgrade(long id) throws Exception {
+    try {
+      Optional<PartnerDto> partnerDto = this.partnerDao.findById(id);
+      if (!partnerDto.isPresent()) {
+        throw new Exception("Socio no encontrado.");
+      }
+      partnerDto.get().setType(SuscriptionType.PENDING_VIP);
+      this.partnerDao.updatePartner(partnerDto.get());
+    } catch (SQLException e) {
+      throw new Exception("Error solicitando actualización a VIP: " + e);
+    }
+  }
+
+  public List<Long> upgradePartners() throws Exception {
+    List<PartnerDto> partnersDtoPending = this.getPartnersByType(SuscriptionType.PENDING_VIP);
+    List<PartnerDto> partnersDtoVIP = this.getPartnersByType(SuscriptionType.VIP);
+
+    int maxVIP = 5;
+    int currentVip = partnersDtoVIP.size();
+    int currentPending = partnersDtoPending.size();
+    int available = maxVIP - currentVip;
+    List<Long> result = new ArrayList<>();
+
+    if (currentPending < 1) {
+      throw new Exception("No hay solicitudes pendientes.");
+    }
+    if (available <= 0) {
+      throw new Exception("Se ha superado el límite máximo de clientes VIP");
+    }
+
+    partnersDtoPending.sort(Comparator.comparingDouble(PartnerDto::getTotalInvoicesAmountPaid).reversed()
+        .thenComparingDouble(PartnerDto::getAmount).reversed()
+        .thenComparing(PartnerDto::getCreationDate));
+
+    for (int i = 0; i < available && i < currentPending; i++) {
+      PartnerDto selectedPartner = partnersDtoPending.get(i);
+      result.add(selectedPartner.getId());
+
+      selectedPartner.setType(SuscriptionType.VIP);
+      this.updatePartner(selectedPartner);
+    }
+
+    return result;
+  }
+
   public GuestDto getCurrentGuest() throws Exception {
     try {
       Optional<GuestDto> guestDto = this.guestDao.findByUserId(user);
@@ -236,6 +282,14 @@ public class ClubService {
       return this.guestDao.findByPartnerId(partner.get());
     } catch (SQLException e) {
       throw new Exception("Error obteniendo datos de invitados del socio: " + e);
+    }
+  }
+
+  public void updatePartner(PartnerDto partnerDto) throws Exception {
+    try {
+      this.partnerDao.updatePartner(partnerDto);
+    } catch (SQLException e) {
+      throw new Exception("Error actualizando datos del socio: " + e);
     }
   }
 

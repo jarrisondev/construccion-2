@@ -15,6 +15,7 @@ import com.club.api.clubapi.model.Partner;
 import com.club.api.clubapi.model.SuscriptionType;
 import com.club.api.clubapi.model.User;
 
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -60,5 +61,19 @@ public class PartnerDao {
 		}
 
 		return partnersDto;
+	}
+
+	@Transactional
+	public void updatePartner(PartnerDto partnerDto) throws Exception {
+		Optional<Partner> optionalPartner = partnerRepository.findById(partnerDto.getId());
+
+		if (optionalPartner.isEmpty()) {
+			throw new Exception("socio no encontrado.");
+		}
+
+		Partner partner = optionalPartner.get();
+		partner.setType(partnerDto.getType());
+
+		partnerRepository.save(partner);
 	}
 }

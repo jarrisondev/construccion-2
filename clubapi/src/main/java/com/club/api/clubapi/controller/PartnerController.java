@@ -24,15 +24,6 @@ public class PartnerController {
 	@Autowired
 	ClubService service;
 
-	@GetMapping("/guests")
-	ResponseEntity<?> listGuests() throws Exception {
-		try {
-			return ResponseEntity.ok(this.service.listByRole(Role.GUEST));
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
-
 	@PostMapping("/guests")
 	ResponseEntity<?> createGuest(@RequestBody @Validated GuestRequestDto personRequest) throws Exception {
 		PersonDto personDto = new PersonDto();
@@ -92,4 +83,13 @@ public class PartnerController {
 		}
 	}
 
+	@GetMapping("/partners/request-vip/{id}")
+	ResponseEntity<?> requestVIPUpgrade(@PathVariable("id") long id) throws Exception {
+		try {
+			this.service.requestVIPUpgrade(id);
+			return ResponseEntity.ok("La solicitud ha sido creada exitosamente.\n");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
 }

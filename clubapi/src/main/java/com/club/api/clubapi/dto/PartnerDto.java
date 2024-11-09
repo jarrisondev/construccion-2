@@ -14,17 +14,4 @@ public class PartnerDto {
   private SuscriptionType type;
   private Timestamp creationDate;
   private double totalInvoicesAmountPaid;
-
-  @Override
-  public String toString() {
-    return """
-        -----------------------------------------------
-        * ID Socio: """ + id + "\n"
-        + "* ID Usuario: " + userId.getId() + "\n"
-        + "* Fecha de afiliación: " + creationDate.toString() + "\n"
-        + "* Fondos Disponibles: " + amount + "\n"
-        + "* Tipo de suscripción: " + type.toString() + "\n"
-        + "----------------------------------------------- \n";
-  }
-
 }

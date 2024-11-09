@@ -1,5 +1,7 @@
 package com.club.api.clubapi.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -81,6 +83,16 @@ public class AdminController {
 		try {
 			this.service.deletePerson(id);
 			return ResponseEntity.ok("se ha eliminado el usuario exitosamente");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
+	@GetMapping("/upgradePartners")
+	ResponseEntity<?> upgradePartners() throws Exception {
+		try {
+			List<Long> partnersUpgraded = this.service.upgradePartners();
+			return ResponseEntity.ok(partnersUpgraded);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
